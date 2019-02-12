@@ -8,12 +8,13 @@
 # Photo Manager
 
 This script will rename all photos in a directory 
-have the same naming scheme based on the time that 
-the photo was taken.
+to have the same naming scheme based on the time that 
+the photos were taken.
 
-This will allow the user to combine photos taken on
-different devices and maintain the ordering based
-on the file name.
+This allows users to combine photos taken on
+different devices and maintain a time series 
+ordering of files in a directory (when files 
+are ordered by file name).
 
 ## Dependencies:
 * Python
