@@ -23,43 +23,57 @@ parser = argparse.ArgumentParser(description=
      "was taken. These photos will be copied to the path supplied. ")
 
 parser.add_argument('album_name', help='The first compoent of the photos new name')
+parser.add_argument('location', help='The location of the photos to be renamed')
 parser.add_argument('path', help='The path to the location '
                                          'where the photos will be copied.')
 args = parser.parse_args()
 
 album_name = args.album_name
+location = args.location
 path = args.path
-
-# Handle Windows
-if plat == "win32" or plat == "win64":
-    path='"'+path+'\\"'
-#print(path)
 
 # Read in photos and meta data
 print("Reading in photos and meta data...")
 
+#Set up and execute the exiftool command
+exif_cmd=list()
+
 if plat == "win32" or plat == "win64":
-    system("exiftool.exe -datetimeoriginal -csv *.jpg > pm_output.txt")
+    exif_cmd = "exiftool.exe -datetimeoriginal -csv "+location+"*.jpg > pm_output.txt"
+    print(exif_cmd)
 else:
-    system("exiftool -datetimeoriginal -csv *.jpg > pm_output.txt")
+    exif_cmd = "exiftool -datetimeoriginal -csv "+location+"*.jpg > pm_output.txt"
+
+system(exif_cmd)
 
 file_names=list()
 dates=list()
+errors = 0
+error_list=list()
 
 with open("pm_output.txt") as f:
     reader = csv.DictReader(f)
     for row in reader:
-        file_names.append(row['SourceFile'])
-        dates.append(datetime.strptime(row['DateTimeOriginal'],"%Y:%m:%d %H:%M:%S"))
+        if row['DateTimeOriginal'] == '':
+            print("Error: No \"DateTimeOriginal\" MetaData for " + row['SourceFile'])
+            error_list.append(row['SourceFile'])
+            errors += 1
+        else:
+            file_names.append(row['SourceFile'])
+            dates.append(datetime.strptime(row['DateTimeOriginal'],"%Y:%m:%d %H:%M:%S"))
 
 #print(file_names)
 #print(dates)
 
 # Preserve file extentions
+# Fix backslashes in Windows
 exten=list()
+count = 0
 for x in file_names:
     match = re.search(r'.(\w+)$', x)
     exten.append(match.group(0))
+    file_names[count] = re.sub('/','\\\\',x)
+    count = count+1
 #print (exten)
 
 # Check that lists are the same length
@@ -85,6 +99,7 @@ for x in dates:
 #print (new_name)
 
 # Rename photos
+count_copy = 0
 for i in range(len(file_names)):
     # Check for duplicate names
     #  Escape Whitespace
@@ -95,7 +110,6 @@ for i in range(len(file_names)):
             file_names_w = file_names[i].replace(' ','\ ')
     else:
         file_names_w = file_names[i]
-    #print (repr(file_names_w))
     if os_path.exists(path[1:-1] + new_name[i] + exten[i]):
         tag = 2
         new_name[i] += "_" + str(tag)
@@ -109,8 +123,17 @@ for i in range(len(file_names)):
         cmd = "copy " + file_names_w + " " + path + new_name[i] + exten[i]
     else:
         cmd = "cp " + file_names_w + " " + path + new_name[i] + exten[i]
-    print(cmd)
+    #print(cmd)
     system(cmd)
+    count_copy = count_copy + 1
+
+# Report number of photos copied and errors
+print("Number of photos copied:", count_copy)
+if errors > 0:
+    print("Number of errors:", errors)
+    print("Files not copied:")
+    for a in error_list:
+        print('\t'+a)
 
 # Cleanup
 
