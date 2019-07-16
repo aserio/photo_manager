@@ -28,6 +28,8 @@ parser.add_argument('path', help='The path to the location '
                                          'where the photos will be copied.')
 parser.add_argument('--dry_run', help='This flag will run the program but will not copy the files.', action="store_true")
 args = parser.parse_args()
+
+dry_run_ = False
 if args.dry_run:
     dry_run_ = True
 
@@ -74,7 +76,8 @@ count = 0
 for x in file_names:
     match = re.search(r'.(\w+)$', x)
     exten.append(match.group(0))
-    file_names[count] = re.sub('/','\\\\',x)
+    if plat == "win32" or plat == "win64":
+        file_names[count] = re.sub('/','\\\\',x)
     count = count+1
 #print (exten)
 
@@ -115,10 +118,10 @@ for i in range(len(file_names)):
             file_names_w = file_names[i].replace(' ','\ ')
     else:
         file_names_w = file_names[i]
-    if os_path.exists(path[1:-1] + new_name[i] + exten[i]):
+    if os_path.exists(path + new_name[i] + exten[i]):
         tag = 2
         new_name[i] += "_" + str(tag)
-        while os_path.exists(path[1:-1] + new_name[i] + exten[i]):
+        while os_path.exists(path + new_name[i] + exten[i]):
             tag += 1
             # Remove the previous tag and underscore. int(log10(tag))
             #  will return 0 for tags <10, 1 for tags <100 etc.
