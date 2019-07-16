@@ -26,7 +26,10 @@ parser.add_argument('album_name', help='The first compoent of the photos new nam
 parser.add_argument('location', help='The location of the photos to be renamed')
 parser.add_argument('path', help='The path to the location '
                                          'where the photos will be copied.')
+parser.add_argument('--dry_run', help='This flag will run the program but will not copy the files.', action="store_true")
 args = parser.parse_args()
+if args.dry_run:
+    dry_run_ = True
 
 album_name = args.album_name
 location = args.location
@@ -40,7 +43,6 @@ exif_cmd=list()
 
 if plat == "win32" or plat == "win64":
     exif_cmd = "exiftool.exe -datetimeoriginal -csv "+location+"*.jpg > pm_output.txt"
-    print(exif_cmd)
 else:
     exif_cmd = "exiftool -datetimeoriginal -csv "+location+"*.jpg > pm_output.txt"
 
@@ -48,8 +50,8 @@ system(exif_cmd)
 
 file_names=list()
 dates=list()
-errors = 0
-error_list=list()
+errors = 0         # Count the number of files which do not have Date/Time Metadata
+error_list=list()  # List of files without Date/Time Metadata
 
 with open("pm_output.txt") as f:
     reader = csv.DictReader(f)
@@ -100,6 +102,9 @@ for x in dates:
 
 # Rename photos
 count_copy = 0
+if dry_run_:
+    print("The non-dry_run version will execute the following commands:")
+
 for i in range(len(file_names)):
     # Check for duplicate names
     #  Escape Whitespace
@@ -123,9 +128,11 @@ for i in range(len(file_names)):
         cmd = "copy " + file_names_w + " " + path + new_name[i] + exten[i]
     else:
         cmd = "cp " + file_names_w + " " + path + new_name[i] + exten[i]
-    #print(cmd)
-    system(cmd)
-    count_copy = count_copy + 1
+    if dry_run_:
+        print(cmd)
+    else:
+        system(cmd)
+        count_copy = count_copy + 1
 
 # Report number of photos copied and errors
 print("Number of photos copied:", count_copy)
@@ -134,6 +141,9 @@ if errors > 0:
     print("Files not copied:")
     for a in error_list:
         print('\t'+a)
+
+if dry_run_:
+    print("This was a dry run! No copies were made!")
 
 # Cleanup
 
