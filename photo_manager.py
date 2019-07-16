@@ -44,7 +44,7 @@ exif_cmd=list()
 if plat == "win32" or plat == "win64":
     exif_cmd = "exiftool.exe -datetimeoriginal -csv -ext jpg -ext jpeg "+location+" > pm_output.txt"
 else:
-    exif_cmd = "exiftool -datetimeoriginal -csv "+location+"*.jpg > pm_output.txt"
+    exif_cmd = "exiftool -datetimeoriginal -csv -ext jpg -ext jpeg "+location+" > pm_output.txt"
 
 system(exif_cmd)
 
