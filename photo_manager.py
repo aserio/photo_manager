@@ -48,6 +48,7 @@ if plat == "win32" or plat == "win64":
 else:
     exif_cmd = "exiftool -datetimeoriginal -csv -ext jpg -ext jpeg "+location+" > pm_output.txt"
 
+#print(exif_cmd)
 system(exif_cmd)
 
 file_names=list()
@@ -98,8 +99,13 @@ print("The supplied photos span", diff.days, "days.")
 
 # Create the list of new names
 new_name=list()
+
+# Set reference date
+# Reference date is one day before the first day so that days start with 1
+day_one = min(dates)
+ref_date = datetime(day_one.year, day_one.month, day_one.day-1)
 for x in dates:
-    d = x-min(dates)
+    d = x-ref_date
     new_name.append(album_name+"_"+str(d.days).zfill(pad)+str(x.hour).zfill(2)+str(x.minute).zfill(2)+str(x.second).zfill(2))
 #print (new_name)
 
