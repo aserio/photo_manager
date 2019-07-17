@@ -26,12 +26,33 @@ parser.add_argument('album_name', help='The first compoent of the photos new nam
 parser.add_argument('location', help='The location of the photos to be renamed')
 parser.add_argument('path', help='The path to the location '
                                          'where the photos will be copied.')
-parser.add_argument('--dry_run', help='This flag will run the program but will not copy the files.', action="store_true")
+parser.add_argument('--dry_run', help='This flag will run the program '
+                                        'but will not copy the files.', action="store_true")
+parser.add_argument('--move', help='This flag will move images to destination'
+                                    'instead of copying them', action="store_true")
 args = parser.parse_args()
 
+# Set Booleans
+# If it is a dry run don't make copies
 dry_run_ = False
 if args.dry_run:
     dry_run_ = True
+
+# Determine weither to copy or move files
+prog_mode = " "
+prog_mess = " "
+if args.move:
+    prog_mess = "Number of photos moved:"
+    if plat == "win32" or plat == "win64":
+        prog_mode = "move"
+    else:
+        prog_mode = "mv"
+else:
+    prog_mess = "Number of photos copied:"
+    if plat == "win32" or plat == "win64":
+        prog_mode = "copy"
+    else:
+        prog_mode = "cp"
 
 album_name = args.album_name
 location = args.location
@@ -133,18 +154,22 @@ for i in range(len(file_names)):
             #  will return 0 for tags <10, 1 for tags <100 etc.
             new_name[i] = new_name[i][:-(int(log10(tag))+2)]
             new_name[i] += "_" + str(tag)
-    if plat == "win32" or plat == "win64":
-        cmd = "copy " + file_names_w + " " + path + new_name[i] + exten[i]
-    else:
-        cmd = "cp " + file_names_w + " " + path + new_name[i] + exten[i]
+    cmd = prog_mode + " " + file_names_w + " " + path + new_name[i] + exten[i]
     if dry_run_:
         print(cmd)
     else:
         system(cmd)
         count_copy = count_copy + 1
 
+'''
+    if plat == "win32" or plat == "win64":
+        cmd = "copy " + file_names_w + " " + path + new_name[i] + exten[i]
+    else:
+        cmd = "cp " + file_names_w + " " + path + new_name[i] + exten[i]
+'''
+
 # Report number of photos copied and errors
-print("Number of photos copied:", count_copy)
+print(prog_mess, count_copy)
 if errors > 0:
     print("Number of errors:", errors)
     print("Files not copied:")
