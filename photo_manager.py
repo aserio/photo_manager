@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2019 Adrian Serio
+# Copyright (c) 2018-2019 Adrian S. Lemoine
 #
 #   Distributed under the Boost Software License, Version 1.0. 
 #   (See accompanying file LICENSE_1_0.txt or copy at 
@@ -160,13 +160,6 @@ for i in range(len(file_names)):
     else:
         system(cmd)
         count_copy = count_copy + 1
-
-'''
-    if plat == "win32" or plat == "win64":
-        cmd = "copy " + file_names_w + " " + path + new_name[i] + exten[i]
-    else:
-        cmd = "cp " + file_names_w + " " + path + new_name[i] + exten[i]
-'''
 
 # Report number of photos copied and errors
 print(prog_mess, count_copy)
